@@ -57,61 +57,80 @@ class MenuModule extends CWebModule
 
   /**
    * @param array $aAttributes
-   * @return int the menu id or an array of error messages.
+   * @return int a structure id or an array of error messages.
    */
   public function createMenu( $aAttributes )
   {
     $model = new Menu();
     $model->attributes = $aAttributes ;
     return $model->save()
-      ? (int)$model->id
+      ? (int)$model->node->id
       : $model->errors;
   }
 
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * @param int $id
+   * @param int $structureId
    * @return bool
    */
-  public function deleteMenu( $id )
+  public function deleteMenu( $structureId )
   {
-    return Menu::model()->findByPk($id)->delete();
+    // DB takes care of deleting the menu
+    return MenuStructure::model()->findByPk($structureId)->deleteNode();
   }
 
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * @param int $id
+   * @param int $structureId
    * @return bool
    */
-  public function menuExists( $id )
+  public function menuExists( $structureId )
   {
-    return Menu::model()->exists( 'id=?', array($id) );
+    return MenuStructure::model()->exists( 'id=?', array($structureId) );
   }
 
   /////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Appends the MenuItem to this Menu as last child.
-   * @param MenuItem $item
-   * @return int the structure id. False on error.
+   * Inserts the menu item before the menu item represented by the $structureId.
+   *
+   * @param int $structureId
+   * @param int $itemId
+   * @return int a structure id or false in case of an error
    */
-  public function addItemToMenu( $itemId, $menuId )
+  public function insertBefore( $structureId, $itemId )
   {
     $item = MenuItem::model()->findByPk( $itemId );
-    $menu = Menu::model()->findByPk( $menuId );
-    return $menu->addItem( $item );
+    $node = MenuStructure::model()->findByPk( $structureId );
+    return $node->insertBefore( $item );
   }
 
   /////////////////////////////////////////////////////////////////////////////
 
-  // @todo refactor - maybe see DOM. add as child of structureId or before/after structureId
-  public function addItemToItem( $itemId, $targetItemId )
+  public function replaceChild( $structureId, $newItemId, $oldStructureId )
+  {
+    $this->insertBefore( $structureId, $newItemId );
+    $this->removeChild( $structureId, $oldStructureId );
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  public function removeChild( $structureId, $structureIdToRemove )
+  {
+    $node = MenuStructure::model()->findByPk( $structureId );
+    $nodeToRemove = MenuStructure::model()->findByPk( $structureIdToRemove );
+    return $node->removeChild( $nodeToRemove );
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  public function appendChild( $structureId, $itemId )
   {
     $item = MenuItem::model()->findByPk( $itemId );
-    $targetItem = MenuItem::model()->findByPk( $targetItemId );
-    return $targetItem->addItem( $item );
+    $node = MenuStructure::model()->findByPk( $structureId );
+    return $node->appendChild( $item );
   }
 
   /////////////////////////////////////////////////////////////////////////////

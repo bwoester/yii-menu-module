@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @property MenuStructure $structure
+ * @property MenuStructure $node
  * @author Benjamin
  */
 class Menu extends MenuBase
@@ -33,7 +33,7 @@ class Menu extends MenuBase
   public function relations()
   {
     return array_merge( parent::relations(), array(
-      'structure' => array( self::BELONGS_TO, 'MenuStructure', 'rootid' ),
+      'node' => array( self::BELONGS_TO, 'MenuStructure', 'rootid' ),
     ));
   }
 
@@ -51,14 +51,14 @@ class Menu extends MenuBase
 
     if ($retVal && $this->isNewRecord)
     {
-      $menuStructure = new MenuStructure();
+      $node = new MenuStructure();
 
-      if ($menuStructure->saveNode())
+      if ($node->saveNode())
       {
-        $rootId = $menuStructure->id;
+        $rootId = $node->id;
 
-        $this->rootid     = $rootId;
-        $this->structure  = $menuStructure;
+        $this->rootid = $rootId;
+        $this->node   = $node;
       }
       else {
         $retVal = false;
@@ -77,11 +77,11 @@ class Menu extends MenuBase
   {
     parent::afterValidate();
 
-    if ($this->isNewRecord && $this->hasErrors() && $this->structure instanceof MenuStructure)
+    if ($this->isNewRecord && $this->hasErrors() && $this->node instanceof MenuStructure)
     {
-      $this->structure->deleteNode();
-      $this->structure  = null;
-      $this->rootid     = null;
+      $this->node->deleteNode();
+      $this->node   = null;
+      $this->rootid = null;
     }
   }
 
@@ -95,11 +95,11 @@ class Menu extends MenuBase
     $newRecord  = $this->isNewRecord;
     $saved      = parent::save( $runValidation, $attributes );
 
-    if ($newRecord && !$saved && $this->structure instanceof MenuStructure)
+    if ($newRecord && !$saved && $this->node instanceof MenuStructure)
     {
-      $this->structure->deleteNode();
-      $this->structure  = null;
-      $this->rootid     = null;
+      $this->node->deleteNode();
+      $this->node   = null;
+      $this->rootid = null;
     }
 
     return $saved;
@@ -116,29 +116,12 @@ class Menu extends MenuBase
 
     if ($deleted)
     {
-      $this->structure->deleteNode();
-      $this->structure  = null;
-      $this->rootid     = null;
+      $this->node->deleteNode();
+      $this->node   = null;
+      $this->rootid = null;
     }
 
     return $deleted;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Appends the MenuItem to this Menu as last child.
-   * @param MenuItem $item
-   * @return int the structure id. False on error.
-   */
-  public function addItem( MenuItem $item )
-  {
-    $menuStructure = new MenuStructure();
-    $menuStructure->menuitemid = $item->id;
-
-    return $menuStructure->appendTo($this->structure)
-      ? (int)$menuStructure->id
-      : false;
   }
 
   /////////////////////////////////////////////////////////////////////////////

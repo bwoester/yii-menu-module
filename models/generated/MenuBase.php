@@ -6,7 +6,10 @@
  * The followings are the available columns in table 'menu':
  * @property integer $id
  * @property string $name
- * @property integer $rootid
+ * @property string $rootid
+ *
+ * The followings are the available model relations:
+ * @property Menustructure $root
  */
 class MenuBase extends CActiveRecord
 {
@@ -37,8 +40,8 @@ class MenuBase extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('name, rootid', 'required'),
-			array('rootid', 'numerical', 'integerOnly'=>true),
 			array('name', 'length', 'max'=>255),
+			array('rootid', 'length', 'max'=>10),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('id, name, rootid', 'safe', 'on'=>'search'),
@@ -53,6 +56,7 @@ class MenuBase extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'root' => array(self::BELONGS_TO, 'Menustructure', 'rootid'),
 		);
 	}
 
@@ -81,7 +85,7 @@ class MenuBase extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('name',$this->name,true);
-		$criteria->compare('rootid',$this->rootid);
+		$criteria->compare('rootid',$this->rootid,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

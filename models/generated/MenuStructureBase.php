@@ -10,6 +10,9 @@
  * @property string $rgt
  * @property integer $level
  * @property integer $menuitemid
+ *
+ * The followings are the available model relations:
+ * @property Menu[] $menus
  */
 class MenuStructureBase extends CActiveRecord
 {
@@ -56,6 +59,7 @@ class MenuStructureBase extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'menus' => array(self::HAS_MANY, 'Menu', 'rootid'),
 		);
 	}
 
